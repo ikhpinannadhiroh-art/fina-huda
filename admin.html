@@ -2,282 +2,420 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Undangan Fina & Huda</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Fina & Huda</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="config.js"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      padding: 25px 15px;
-      background: #f4eee2;
-      color: #56391f;
-      font-family: Arial, sans-serif;
-    }
-
-    .container {
-      max-width: 650px;
-      margin: 30px auto;
-      background: #fbf8f1;
-      padding: 25px;
-      border: 1px solid #d8c7a9;
-      border-radius: 14px;
-    }
-
-    h1, h2 {
-      text-align: center;
-      color: #805a36;
-    }
-
-    input {
-      width: 100%;
-      padding: 13px;
-      margin: 7px 0 15px;
-      border: 1px solid #d8c7a9;
-      border-radius: 7px;
-      font-size: 15px;
-    }
-
-    button, .wa {
-      display: inline-block;
-      padding: 12px 17px;
-      border: 0;
-      border-radius: 7px;
-      background: #805a36;
-      color: white;
-      cursor: pointer;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    button:hover, .wa:hover {
-      background: #56391f;
-    }
-
-    .full { width: 100%; }
-
-    .guest {
-      padding: 15px 0;
-      border-bottom: 1px solid #d8c7a9;
-      line-height: 1.7;
-      overflow-wrap: anywhere;
-    }
-
-    .guest strong { font-size: 16px; }
-
-    .wa {
-      background: #287b4b;
-      margin-top: 5px;
-    }
-
-    .logout {
-      background: #805a36;
-      float: right;
-    }
-
-    #message {
-      margin: 15px 0;
-      font-size: 14px;
-    }
-
-    [hidden] { display: none !important; }
-  </style>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;padding:20px;
+  background:#f4eee2;color:#56391f;
+  font-family:Arial,sans-serif
+}
+.container{max-width:1050px;margin:auto}
+header{text-align:center;margin:25px 0}
+header h1{font-family:Georgia,serif;color:#805a36}
+.panel{
+  background:#fbf8f1;padding:22px;
+  border:1px solid #d8c7a9;border-radius:12px;
+  margin-bottom:20px
+}
+h2{font-family:Georgia,serif;color:#805a36}
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:12px
+}
+.stat{
+  background:#fff;padding:18px 10px;
+  border:1px solid #d8c7a9;border-radius:10px;
+  text-align:center
+}
+.stat strong{display:block;font-size:25px;color:#805a36}
+input,select,textarea{
+  width:100%;padding:12px;margin:7px 0 15px;
+  border:1px solid #d8c7a9;border-radius:7px;
+  font-size:15px;background:white
+}
+button,.btn{
+  display:inline-block;padding:11px 16px;
+  border:0;border-radius:7px;
+  background:#805a36;color:white;
+  cursor:pointer;text-decoration:none;
+  font-size:14px
+}
+button:hover,.btn:hover{background:#56391f}
+.green{background:#287b4b}
+.red{background:#9a4235}
+.full{width:100%}
+.guest{
+  border-bottom:1px solid #d8c7a9;
+  padding:15px 0;overflow-wrap:anywhere
+}
+.guest strong{font-size:17px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.muted{color:#8a765f;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #d8c7a9}
+.table-wrap{overflow-x:auto}
+.badge{
+  display:inline-block;padding:5px 8px;
+  border-radius:20px;background:#eee2ce
+}
+#message{margin:12px 0;font-size:14px}
+.topbar{display:flex;justify-content:flex-end}
+[hidden]{display:none!important}
+@media(max-width:600px){
+  body{padding:12px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .panel{padding:16px}
+  th,td{padding:8px}
+}
+</style>
 </head>
 
 <body>
-  <div class="container">
+<div class="container">
+<header>
+  <h1>Admin Fina & Huda</h1>
+  <p>Pengelolaan Tamu Undangan</p>
+</header>
 
-    <h1>Admin Fina & Huda</h1>
-    <p style="text-align:center;">Kelola daftar tamu undangan</p>
+<section class="panel" id="loginSection">
+  <h2 style="text-align:center">Login Admin</h2>
+  <form id="loginForm">
+    <label>Email</label>
+    <input type="email" id="email" required>
+    <label>Password</label>
+    <input type="password" id="password" required>
+    <button class="full" type="submit">Login</button>
+  </form>
+  <p id="loginMessage"></p>
+</section>
 
-    <section id="loginSection">
-      <h2>Login Admin</h2>
+<main id="adminSection" hidden>
 
-      <form id="loginForm">
-        <label>Email Admin</label>
-        <input type="email" id="email" required>
+<div class="topbar">
+  <button id="logoutBtn" class="red">Keluar</button>
+</div>
 
-        <label>Password</label>
-        <input type="password" id="password" required>
-
-        <button class="full" type="submit">Login</button>
-      </form>
-    </section>
-
-    <section id="adminSection" hidden>
-      <button class="logout" id="logoutBtn">Keluar</button>
-      <div style="clear:both"></div>
-
-      <h2>Tambah Tamu</h2>
-
-      <form id="guestForm">
-        <label>Nama Tamu</label>
-        <input type="text" id="guestName" placeholder="Contoh: Bapak Ahmad" required>
-
-        <label>Nomor WhatsApp</label>
-        <input type="tel" id="guestPhone" placeholder="Contoh: 081234567890" required>
-
-        <button class="full" type="submit">Simpan Tamu</button>
-      </form>
-
-      <p id="message"></p>
-
-      <h2>Daftar Tamu</h2>
-      <div id="guestList">Memuat daftar tamu...</div>
-    </section>
-
+<section class="panel">
+  <h2>Ringkasan Undangan</h2>
+  <div class="stats">
+    <div class="stat"><strong id="totalGuests">0</strong>Total Tamu</div>
+    <div class="stat"><strong id="totalPresent">0</strong>Hadir</div>
+    <div class="stat"><strong id="totalAbsent">0</strong>Tidak Hadir</div>
+    <div class="stat"><strong id="totalWishes">0</strong>Ucapan</div>
   </div>
+</section>
 
-  <script>
-    const client = window.supabase.createClient(
-      window.WEDDING_CONFIG.SUPABASE_URL,
-      window.WEDDING_CONFIG.SUPABASE_ANON_KEY
+<section class="panel">
+  <h2>Tambah Nama Tamu</h2>
+  <form id="guestForm">
+    <label>Nama Tamu</label>
+    <input id="guestName" placeholder="Contoh: Bapak Ahmad" required>
+
+    <label>Nomor WhatsApp</label>
+    <input id="guestPhone" type="tel" placeholder="081234567890" required>
+
+    <label>Kategori Tamu</label>
+    <select id="guestGroup">
+      <option value="Keluarga">Keluarga</option>
+      <option value="Teman">Teman</option>
+      <option value="Kerabat">Kerabat</option>
+      <option value="Rekan Kerja">Rekan Kerja</option>
+      <option value="Lainnya">Lainnya</option>
+    </select>
+
+    <label>Catatan (opsional)</label>
+    <input id="guestNote" placeholder="Catatan tambahan">
+
+    <button type="submit" class="full">+ Simpan Tamu</button>
+  </form>
+  <p id="message"></p>
+</section>
+
+<section class="panel">
+  <h2>Daftar Tamu</h2>
+  <input id="searchGuest" placeholder="Cari nama tamu...">
+  <div id="guestList">Memuat data...</div>
+</section>
+
+<section class="panel">
+  <h2>Konfirmasi Kehadiran dan Ucapan</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Kehadiran</th>
+          <th>Jumlah</th>
+          <th>Ucapan & Doa</th>
+          <th>Waktu</th>
+        </tr>
+      </thead>
+      <tbody id="rsvpList">
+        <tr><td colspan="5">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Kelola Ucapan</h2>
+  <div id="wishList">Memuat ucapan...</div>
+</section>
+
+</main>
+</div>
+
+<script>
+const client = window.supabase.createClient(
+  window.WEDDING_CONFIG.SUPABASE_URL,
+  window.WEDDING_CONFIG.SUPABASE_ANON_KEY
+);
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value){
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;',
+    '"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+
+function phoneFormat(value){
+  let number = value.replace(/\D/g,'');
+  if(number.startsWith('0')) number='62'+number.slice(1);
+  else if(number.startsWith('8')) number='62'+number;
+  return number;
+}
+
+function showMessage(text,color='#56391f'){
+  $('message').textContent=text;
+  $('message').style.color=color;
+}
+
+async function checkLogin(){
+  const {data}=await client.auth.getSession();
+  $('loginSection').hidden=!!data.session;
+  $('adminSection').hidden=!data.session;
+  if(data.session) refreshAll();
+}
+
+$('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  $('loginMessage').textContent='Memeriksa akun...';
+
+  const {error}=await client.auth.signInWithPassword({
+    email:$('email').value,
+    password:$('password').value
+  });
+
+  if(error) $('loginMessage').textContent='Login gagal: '+error.message;
+  else checkLogin();
+});
+
+$('logoutBtn').onclick=async()=>{
+  await client.auth.signOut();
+  checkLogin();
+};
+
+$('guestForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+
+  const name=$('guestName').value.trim();
+  const phone=phoneFormat($('guestPhone').value);
+
+  if(!phone){
+    showMessage('Nomor WhatsApp tidak valid.','#9a4235');
+    return;
+  }
+
+  const {error}=await client.from('guests').insert([{
+    name,
+    phone,
+    group_name:$('guestGroup').value,
+    note:$('guestNote').value.trim()
+  }]);
+
+  if(error){
+    showMessage('Gagal menyimpan: '+error.message,'#9a4235');
+    return;
+  }
+
+  showMessage('Tamu berhasil ditambahkan!','#287b4b');
+  e.target.reset();
+  loadGuests();
+});
+
+let allGuests=[];
+
+async function loadGuests(){
+  const list=$('guestList');
+  list.textContent='Memuat daftar tamu...';
+
+  const {data,error}=await client.from('guests')
+    .select('*').order('created_at',{ascending:false});
+
+  if(error){list.textContent='Gagal: '+error.message;return;}
+
+  allGuests=data||[];
+  $('totalGuests').textContent=allGuests.length;
+  renderGuests();
+}
+
+function renderGuests(){
+  const keyword=$('searchGuest').value.toLowerCase();
+  const list=$('guestList');
+  list.replaceChildren();
+
+  const filtered=allGuests.filter(g=>
+    (g.name||'').toLowerCase().includes(keyword)
+  );
+
+  if(!filtered.length){
+    list.textContent='Belum ada tamu yang cocok.';
+    return;
+  }
+
+  filtered.forEach(g=>{
+    const url=new URL('https://ikhpinannadhiroh-art.github.io/fina-huda/');
+    url.searchParams.set('to',g.name);
+
+    const message='Assalamu’alaikum, '+g.name+
+      '. Kami mengundang Anda untuk hadir di pernikahan Fina & Huda. '+
+      'Silakan buka undangan melalui tautan berikut: '+url.href;
+
+    const item=document.createElement('div');
+    item.className='guest';
+    item.innerHTML=
+      '<strong>'+escapeHTML(g.name)+'</strong>'+
+      '<div class="muted">'+escapeHTML(g.group_name||'')+
+      ' · WhatsApp: '+escapeHTML(g.phone||'-')+'</div>'+
+      '<div class="muted">Status: '+escapeHTML(g.attendance||'Belum Konfirmasi')+'</div>'+
+      '<div class="actions">'+
+      '<a class="btn green" target="_blank" rel="noopener" href="https://wa.me/'+
+      encodeURIComponent(g.phone||'')+'?text='+encodeURIComponent(message)+
+      '">Kirim WhatsApp</a>'+
+      '<button type="button" data-copy="'+escapeHTML(url.href)+'">Salin Link</button>'+
+      '</div>';
+
+    item.querySelector('[data-copy]').onclick=()=>{
+      navigator.clipboard.writeText(url.href);
+      alert('Link undangan berhasil disalin.');
+    };
+
+    list.appendChild(item);
+  });
+}
+
+$('searchGuest').addEventListener('input',renderGuests);
+
+async function loadRSVP(){
+  const {data,error}=await client.from('rsvps')
+    .select('*').order('created_at',{ascending:false});
+
+  if(error){
+    $('rsvpList').innerHTML='<tr><td colspan="5">Gagal memuat RSVP.</td></tr>';
+    return;
+  }
+
+  const rows=data||[];
+  $('totalPresent').textContent=rows.filter(r=>r.attendance==='Hadir').length;
+  $('totalAbsent').textContent=rows.filter(r=>r.attendance==='Tidak Hadir').length;
+
+  const wishesResult=await client.from('wishes').select('*')
+    .order('created_at',{ascending:false});
+
+  const wishes=wishesResult.data||[];
+  $('totalWishes').textContent=wishes.length;
+
+  const tbody=$('rsvpList');
+  tbody.replaceChildren();
+
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="5">Belum ada konfirmasi.</td></tr>';
+    return;
+  }
+
+  rows.forEach(r=>{
+    const related=wishes.filter(w=>
+      w.guest_name===r.guest_name
     );
+    const message=related.map(w=>w.message).join(' | ')||'-';
 
-    const loginSection = document.getElementById('loginSection');
-    const adminSection = document.getElementById('adminSection');
-    const message = document.getElementById('message');
+    const tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td>'+escapeHTML(r.guest_name)+'</td>'+
+      '<td><span class="badge">'+escapeHTML(r.attendance)+'</span></td>'+
+      '<td>'+escapeHTML(r.guest_count||1)+'</td>'+
+      '<td>'+escapeHTML(message)+'</td>'+
+      '<td>'+new Date(r.created_at).toLocaleString('id-ID')+'</td>';
 
-    function showMessage(text, color = '#56391f') {
-      message.textContent = text;
-      message.style.color = color;
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadWishes(){
+  const {data,error}=await client.from('wishes')
+    .select('*').order('created_at',{ascending:false});
+
+  const list=$('wishList');
+  list.replaceChildren();
+
+  if(error){list.textContent='Gagal memuat ucapan.';return;}
+
+  if(!data.length){
+    list.textContent='Belum ada ucapan.';
+    return;
+  }
+
+  data.forEach(w=>{
+    const item=document.createElement('div');
+    item.className='guest';
+
+    item.innerHTML=
+      '<strong>'+escapeHTML(w.guest_name)+'</strong>'+
+      '<p>'+escapeHTML(w.message)+'</p>'+
+      '<p class="muted">Status: '+(w.approved?'Disetujui':'Menunggu persetujuan')+'</p>';
+
+    if(!w.approved){
+      const btn=document.createElement('button');
+      btn.textContent='Setujui Ucapan';
+      btn.className='green';
+      btn.onclick=async()=>{
+        const {error}=await client.from('wishes')
+          .update({approved:true}).eq('id',w.id);
+        if(error) alert(error.message);
+        else refreshAll();
+      };
+      item.appendChild(btn);
     }
 
-    async function checkLogin() {
-      const { data } = await client.auth.getSession();
+    const del=document.createElement('button');
+    del.textContent='Hapus';
+    del.className='red';
+    del.style.marginLeft='8px';
+    del.onclick=async()=>{
+      if(!confirm('Hapus ucapan ini?'))return;
+      const {error}=await client.from('wishes').delete().eq('id',w.id);
+      if(error) alert(error.message);
+      else refreshAll();
+    };
+    item.appendChild(del);
 
-      if (data.session) {
-        loginSection.hidden = true;
-        adminSection.hidden = false;
-        loadGuests();
-      } else {
-        loginSection.hidden = false;
-        adminSection.hidden = true;
-      }
-    }
+    list.appendChild(item);
+  });
+}
 
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+async function refreshAll(){
+  await Promise.all([loadGuests(),loadRSVP(),loadWishes()]);
+}
 
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      const { error } = await client.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        alert('Login gagal: ' + error.message);
-      } else {
-        checkLogin();
-      }
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', async function() {
-      await client.auth.signOut();
-      checkLogin();
-    });
-
-    function formatPhone(phone) {
-      let number = phone.replace(/\D/g, '');
-
-      if (number.startsWith('0')) {
-        number = '62' + number.slice(1);
-      } else if (number.startsWith('8')) {
-        number = '62' + number;
-      }
-
-      return number;
-    }
-
-    document.getElementById('guestForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-
-      const name = document.getElementById('guestName').value.trim();
-      const phone = formatPhone(document.getElementById('guestPhone').value);
-
-      if (!name || !phone) {
-        showMessage('Nama dan nomor WhatsApp harus diisi.', 'red');
-        return;
-      }
-
-      const { error } = await client
-        .from('guests')
-        .insert([{ name: name, phone: phone }]);
-
-      if (error) {
-        showMessage('Gagal menyimpan: ' + error.message, 'red');
-        return;
-      }
-
-      showMessage('Tamu berhasil ditambahkan!', 'green');
-      this.reset();
-      loadGuests();
-    });
-
-    async function loadGuests() {
-      const list = document.getElementById('guestList');
-      list.textContent = 'Memuat daftar tamu...';
-
-      const { data, error } = await client
-        .from('guests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        list.textContent = 'Gagal memuat tamu: ' + error.message;
-        return;
-      }
-
-      list.replaceChildren();
-
-      if (!data.length) {
-        list.textContent = 'Belum ada tamu yang ditambahkan.';
-        return;
-      }
-
-      data.forEach(guest => {
-        const item = document.createElement('div');
-        item.className = 'guest';
-
-        const name = document.createElement('strong');
-        name.textContent = guest.name;
-
-        const phone = document.createElement('div');
-        phone.textContent = 'WhatsApp: ' + (guest.phone || '-');
-
-        const status = document.createElement('div');
-        status.textContent = 'Status: ' + guest.attendance;
-
-        const inviteURL = new URL(
-          'https://ikhpinannadhiroh-art.github.io/fina-huda/'
-        );
-        inviteURL.searchParams.set('to', guest.name);
-
-        const text = 'Assalamu’alaikum, ' + guest.name +
-          '. Kami mengundang Anda untuk hadir di pernikahan Fina & Huda. ' +
-          'Silakan buka undangan melalui tautan berikut: ' + inviteURL.href;
-
-        const wa = document.createElement('a');
-        wa.className = 'wa';
-        wa.textContent = 'Kirim Undangan via WhatsApp';
-        wa.href = 'https://wa.me/' + guest.phone +
-          '?text=' + encodeURIComponent(text);
-        wa.target = '_blank';
-        wa.rel = 'noopener';
-
-        item.append(name, phone, status, wa);
-        list.appendChild(item);
-      });
-    }
-
-    checkLogin();
-  </script>
+checkLogin();
+</script>
 </body>
 </html>
