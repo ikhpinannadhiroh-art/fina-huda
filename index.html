@@ -334,8 +334,19 @@ function autoScroll(){
 const openInvitation = document.querySelector('.btn[href="#intro"]');
 
 if(openInvitation){
-  openInvitation.addEventListener('click', function(){
-    if(!autoScrolling){
+  openInvitation.addEventListener('click', function(e){
+    e.preventDefault();
+
+    const intro = document.getElementById('intro');
+
+    if(intro){
+      // Langsung masuk ke halaman informasi
+     window.scrollTo({
+  top: intro.offsetTop,
+  behavior: 'instant'
+});
+
+      // Setelah masuk, mulai auto scroll perlahan
       autoScrolling = true;
       cancelAnimationFrame(animationFrame);
       requestAnimationFrame(autoScroll);
