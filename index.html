@@ -138,6 +138,9 @@ footer h2{color:white}
     <h1>Fina <span>&</span> Huda</h1>
     <div class="date">11 · 01 · 2027</div>
     <p>Dengan penuh kebahagiaan, kami mengundang Anda untuk menjadi bagian dari hari istimewa kami.</p>
+    <p style="font-size:14px; margin:20px 0 12px; letter-spacing:1px;">
+  <em>Kepada Yth. <span id="guestDisplayName">Bapak/Ibu/Saudara/i</span>
+</p>
     <a class="btn" href="#intro">
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
        stroke="currentColor" stroke-width="1.7"
@@ -297,6 +300,17 @@ Save the Date ♡
 
 
 <script>
+  // Membaca nama tamu dari tautan undangan
+const params = new URLSearchParams(window.location.search);
+const guest = params.get('to');
+
+if (guest) {
+  const guestDisplay = document.getElementById('guestDisplayName');
+
+  if (guestDisplay) {
+    guestDisplay.textContent = guest.trim().slice(0, 80);
+  }
+}
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if(entry.isIntersecting){
