@@ -435,8 +435,8 @@ Save the Date ♡
       <label>Konfirmasi Kehadiran</label>
       <select id="attendance" required>
         <option value="">Pilih konfirmasi</option>
-        <option>Hadir</option>
-        <option>Maaf, belum bisa hadir</option>
+        <option value="Hadir">Hadir</option>
+        <option value="Tidak Hadir">Maaf, belum bisa hadir</option>
       </select>
       <label>Ucapan & Doa</label>
       <textarea id="message" required placeholder="Tuliskan ucapan Anda..."></textarea>
@@ -477,11 +477,58 @@ const observer = new IntersectionObserver(entries => {
 
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 
-document.getElementById('wishForm').addEventListener('submit', function(e){
+
+document.getElementById('wishForm').addEventListener('submit', async function(e){
   e.preventDefault();
-  document.getElementById('formNote').textContent =
-    'Terima kasih! Form ini belum terhubung ke penyimpanan RSVP.';
+
+  const note = document.getElementById('formNote');
+  const button = this.querySelector('button[type="submit"]');
+
+  const name = document.getElementById('guestName').value.trim();
+  const attendance = document.getElementById('attendance').value;
+  const message = document.getElementById('message').value.trim();
+
+  const config = window.WEDDING_CONFIG || {};
+
+  if (!window.supabase || !config.SUPABASE_URL || !config.SUPABASE_ANON_KEY) {
+    note.textContent = 'Koneksi database belum tersedia.';
+    return;
+  }
+
+  const client = window.supabase.createClient(
+    config.SUPABASE_URL,
+    config.SUPABASE_ANON_KEY
+  );
+
+  button.disabled = true;
+  note.textContent = 'Sedang mengirim...';
+
+  try {
+    const { error: rsvpError } = await client.from('rsvps').insert({
+      guest_name: name,
+      attendance: attendance
+    });
+
+    if (rsvpError) throw rsvpError;
+
+    const { error: wishError } = await client.from('wishes').insert({
+      guest_name: name,
+      message: message
+    });
+
+    if (wishError) throw wishError;
+
+    note.textContent = 'Terima kasih! Konfirmasi kehadiran dan ucapan berhasil dikirim.';
+    this.reset();
+
+  } catch (error) {
+    console.error(error);
+    note.textContent = 'Maaf, data belum berhasil dikirim. Silakan coba kembali.';
+  } finally {
+    button.disabled = false;
+  }
 });
+
 
 // AUTO SCROLL
 let autoScrolling = false;
