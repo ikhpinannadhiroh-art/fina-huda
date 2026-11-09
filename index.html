@@ -345,7 +345,8 @@ let animationFrame;
 function autoScroll(){
   if(!autoScrolling) return;
 
-  window.scrollBy(0, 3)
+  const speed = window.innerWidth <= 768 ? 7 : 3;
+window.scrollBy(0, speed);
 
   if(window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2){
     autoScrolling = false;
