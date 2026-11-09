@@ -244,14 +244,24 @@ Save the Date ♡
 
 <section class="gift reveal">
   <div class="wrap">
-    <div class="small">A Little Gift</div>
     <h2>Wedding Gift</h2>
+
     <div class="gift-card">
-      <div class="gift-icon">♡</div>
-      <p>Kehadiran dan doa restu Anda merupakan hadiah terindah bagi kami.</p>
-      <p><strong>Bank BRI</strong></p>
-<p>Nomor Rekening: <strong>622501016851504</strong></p>
-<p>Atas Nama: Ikhpinan Nadhiroh</p>
+      <p>
+        Doa restu Anda merupakan karunia yang sangat berarti bagi kami,
+        dan jika memberi adalah ungkapan tanda kasih,
+        Anda dapat memberi kado secara cashless.
+      </p>
+
+      <button class="btn" type="button"
+        onclick="document.getElementById('giftAccount').hidden=false; this.hidden=true;">
+        🎁 Kirim Hadiah
+      </button>
+
+      <div id="giftAccount" hidden>
+  <p><strong>BRI: 622501016851504</strong></p>
+  <p>Ikhpinan Nadhiroh</p>
+</div>
     </div>
   </div>
 </section>
@@ -285,6 +295,7 @@ Save the Date ♡
   <p style="font-size:11px;letter-spacing:2px">11 JANUARI 2027</p>
 </footer>
 
+
 <script>
 const observer = new IntersectionObserver(entries => {
   entries.forEach(entry => {
@@ -294,6 +305,7 @@ const observer = new IntersectionObserver(entries => {
     }
   });
 },{threshold:.12});
+
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 
 document.getElementById('wishForm').addEventListener('submit', function(e){
@@ -301,6 +313,53 @@ document.getElementById('wishForm').addEventListener('submit', function(e){
   document.getElementById('formNote').textContent =
     'Terima kasih! Form ini belum terhubung ke penyimpanan RSVP.';
 });
+
+// AUTO SCROLL
+let autoScrolling = false;
+let animationFrame;
+
+function autoScroll(){
+  if(!autoScrolling) return;
+
+  window.scrollBy(0, 0.35);
+
+  if(window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2){
+    autoScrolling = false;
+    return;
+  }
+
+  animationFrame = requestAnimationFrame(autoScroll);
+}
+
+const openInvitation = document.querySelector('.btn[href="#intro"]');
+
+if(openInvitation){
+  openInvitation.addEventListener('click', function(){
+    if(!autoScrolling){
+      autoScrolling = true;
+      cancelAnimationFrame(animationFrame);
+      requestAnimationFrame(autoScroll);
+    }
+  });
+}
+
+// Berhenti jika tamu mulai menggulir sendiri
+function stopAutoScroll(){
+  if(autoScrolling){
+    autoScrolling = false;
+    cancelAnimationFrame(animationFrame);
+  }
+}
+
+window.addEventListener('wheel', stopAutoScroll, {passive:true});
+window.addEventListener('touchmove', stopAutoScroll, {passive:true});
+
+window.addEventListener('keydown', function(e){
+  if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].includes(e.key)){
+    stopAutoScroll();
+  }
+});
 </script>
+
 </body>
 </html>
