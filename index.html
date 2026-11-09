@@ -5,6 +5,57 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Wedding of Fina & Huda</title>
+  /* Warna latar belakang setiap halaman */
+.letter {
+  background: #ffffff;
+  color: #4b3827;
+}
+
+.intro {
+  background: #f5efe4;
+}
+
+.event {
+  background: #ffffff;
+}
+
+.calendar {
+  background: #f5efe4;
+}
+
+.gift {
+  background: #ffffff;
+}
+
+.wishes {
+  background: #f5efe4;
+}
+
+/* Tampilan hitung mundur */
+.countdown {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  max-width: 390px;
+  margin: 25px auto;
+}
+
+.countdown div {
+  background: #f5efe4;
+  padding: 15px 5px;
+  border-radius: 8px;
+}
+
+.countdown strong {
+  display: block;
+  font-size: 25px;
+  color: var(--red);
+}
+
+.countdown span {
+  font-size: 11px;
+  color: var(--brown);
+}
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap');
 
@@ -165,33 +216,83 @@ section * {
   </div>
 </section>
 
-<section class="intro reveal" id="intro">
+
+<!-- HALAMAN 2: SURAT PERNIKAHAN -->
+<section class="letter reveal" id="intro">
   <div class="wrap">
-    <div class="ornament">♡ ❧ ♡</div>
-    <div class="small">Assalamu'alaikum Warahmatullahi Wabarakatuh</div>
-    <h2>We Are Getting Married</h2>
+    <div class="small">THE WEDDING OF</div>
+    <h2 style="font-size:42px;margin:15px 0;">Fina & Huda</h2>
+    <p style="letter-spacing:3px;color:var(--red);">
+      11 . 01 . 2027
+    </p>
+
     <div class="rule"></div>
-    <p>Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan putra-putri kami.</p>
 
-<div class="couple">
-  <div class="person">
-    <div class="avatar">👰🏻</div>
-    <h3>Ikhpinan Nadhiroh</h3>
-    <p>Putri dari</p>
-    <p><strong>Bapak Muhlisin</strong><br>
-    dan <strong>Ibu Nurhayati</strong></p>
-  </div>
+    <p style="font-size:15px;line-height:2;font-style:italic;">
+      “Dan di antara tanda-tanda kekuasaan-Nya ialah Dia
+      menciptakan untukmu istri-istri dari jenismu sendiri,
+      supaya kamu cenderung dan merasa tenteram kepadanya,
+      dan dijadikan-Nya di antaramu rasa kasih dan sayang.
+      Sesungguhnya pada yang demikian itu benar-benar
+      terdapat tanda-tanda bagi kaum yang berpikir.”
+    </p>
 
-  <div class="person">
-    <div class="avatar">🤵🏻</div>
-    <h3>Moch. Kholidul Huda</h3>
-    <p>Putra dari</p>
-    <p><strong>Bapak Abdul Karim (Alm)</strong><br>
-    dan <strong>Ibu Sururiyah</strong></p>
-  </div>
-</div>
+    <p style="font-weight:bold;color:var(--red);">
+      QS. Ar-Rum: 21
+    </p>
+
+    <div class="rule"></div>
+
+    <h3 style="color:var(--navy);">Menuju Hari Bahagia</h3>
+    <div class="countdown">
+      <div><strong id="days">00</strong><span>Hari</span></div>
+      <div><strong id="hours">00</strong><span>Jam</span></div>
+      <div><strong id="minutes">00</strong><span>Menit</span></div>
+      <div><strong id="seconds">00</strong><span>Detik</span></div>
+    </div>
   </div>
 </section>
+
+<!-- HALAMAN 3: SALAM DAN PROFIL MEMPELAI -->
+<section class="intro reveal">
+  <div class="wrap">
+    <div class="small">
+      Assalamu'alaikum Warahmatullahi Wabarakatuh
+    </div>
+
+    <h2>We Are Getting Married</h2>
+    <div class="rule"></div>
+
+    <p>
+      Dengan memohon rahmat dan ridho Allah SWT,
+      kami bermaksud menyelenggarakan pernikahan
+      putra-putri kami.
+    </p>
+
+    <div class="couple">
+      <div class="person">
+        <div class="avatar">👰🏻</div>
+        <h3>Ikhpinan Nadhiroh</h3>
+        <p>Putri dari</p>
+        <p>
+          <strong>Bapak Muhlisin</strong><br>
+          dan <strong>Ibu Nurhayati</strong>
+        </p>
+      </div>
+
+      <div class="person">
+        <div class="avatar">🤵🏻</div>
+        <h3>Moch. Kholidul Huda</h3>
+        <p>Putra dari</p>
+        <p>
+          <strong>Bapak Abdul Karim (Alm)</strong><br>
+          dan <strong>Ibu Sururiyah</strong>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
 
 <section class="event reveal">
   <div class="wrap">
@@ -396,6 +497,35 @@ window.addEventListener('keydown', function(e){
   }
 });
 </script>
+<script>
+function updateCountdown() {
+  const weddingDate = new Date('2027-01-11T09:00:00+07:00').getTime();
+  const now = new Date().getTime();
+  const distance = weddingDate - now;
 
+  if (distance <= 0) {
+    document.getElementById('days').textContent = '00';
+    document.getElementById('hours').textContent = '00';
+    document.getElementById('minutes').textContent = '00';
+    document.getElementById('seconds').textContent = '00';
+    return;
+  }
+
+  document.getElementById('days').textContent =
+    Math.floor(distance / (1000 * 60 * 60 * 24));
+
+  document.getElementById('hours').textContent =
+    Math.floor((distance / (1000 * 60 * 60)) % 24);
+
+  document.getElementById('minutes').textContent =
+    Math.floor((distance / (1000 * 60)) % 60);
+
+  document.getElementById('seconds').textContent =
+    Math.floor((distance / 1000) % 60);
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
 </body>
 </html>
