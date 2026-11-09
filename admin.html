@@ -1,0 +1,283 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Undangan Fina & Huda</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 25px 15px;
+      background: #f4eee2;
+      color: #56391f;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
+      background: #fbf8f1;
+      padding: 25px;
+      border: 1px solid #d8c7a9;
+      border-radius: 14px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #805a36;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0 15px;
+      border: 1px solid #d8c7a9;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    button, .wa {
+      display: inline-block;
+      padding: 12px 17px;
+      border: 0;
+      border-radius: 7px;
+      background: #805a36;
+      color: white;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    button:hover, .wa:hover {
+      background: #56391f;
+    }
+
+    .full { width: 100%; }
+
+    .guest {
+      padding: 15px 0;
+      border-bottom: 1px solid #d8c7a9;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .guest strong { font-size: 16px; }
+
+    .wa {
+      background: #287b4b;
+      margin-top: 5px;
+    }
+
+    .logout {
+      background: #805a36;
+      float: right;
+    }
+
+    #message {
+      margin: 15px 0;
+      font-size: 14px;
+    }
+
+    [hidden] { display: none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>Admin Fina & Huda</h1>
+    <p style="text-align:center;">Kelola daftar tamu undangan</p>
+
+    <section id="loginSection">
+      <h2>Login Admin</h2>
+
+      <form id="loginForm">
+        <label>Email Admin</label>
+        <input type="email" id="email" required>
+
+        <label>Password</label>
+        <input type="password" id="password" required>
+
+        <button class="full" type="submit">Login</button>
+      </form>
+    </section>
+
+    <section id="adminSection" hidden>
+      <button class="logout" id="logoutBtn">Keluar</button>
+      <div style="clear:both"></div>
+
+      <h2>Tambah Tamu</h2>
+
+      <form id="guestForm">
+        <label>Nama Tamu</label>
+        <input type="text" id="guestName" placeholder="Contoh: Bapak Ahmad" required>
+
+        <label>Nomor WhatsApp</label>
+        <input type="tel" id="guestPhone" placeholder="Contoh: 081234567890" required>
+
+        <button class="full" type="submit">Simpan Tamu</button>
+      </form>
+
+      <p id="message"></p>
+
+      <h2>Daftar Tamu</h2>
+      <div id="guestList">Memuat daftar tamu...</div>
+    </section>
+
+  </div>
+
+  <script>
+    const client = window.supabase.createClient(
+      window.WEDDING_CONFIG.SUPABASE_URL,
+      window.WEDDING_CONFIG.SUPABASE_ANON_KEY
+    );
+
+    const loginSection = document.getElementById('loginSection');
+    const adminSection = document.getElementById('adminSection');
+    const message = document.getElementById('message');
+
+    function showMessage(text, color = '#56391f') {
+      message.textContent = text;
+      message.style.color = color;
+    }
+
+    async function checkLogin() {
+      const { data } = await client.auth.getSession();
+
+      if (data.session) {
+        loginSection.hidden = true;
+        adminSection.hidden = false;
+        loadGuests();
+      } else {
+        loginSection.hidden = false;
+        adminSection.hidden = true;
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const { error } = await client.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        alert('Login gagal: ' + error.message);
+      } else {
+        checkLogin();
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', async function() {
+      await client.auth.signOut();
+      checkLogin();
+    });
+
+    function formatPhone(phone) {
+      let number = phone.replace(/\D/g, '');
+
+      if (number.startsWith('0')) {
+        number = '62' + number.slice(1);
+      } else if (number.startsWith('8')) {
+        number = '62' + number;
+      }
+
+      return number;
+    }
+
+    document.getElementById('guestForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('guestName').value.trim();
+      const phone = formatPhone(document.getElementById('guestPhone').value);
+
+      if (!name || !phone) {
+        showMessage('Nama dan nomor WhatsApp harus diisi.', 'red');
+        return;
+      }
+
+      const { error } = await client
+        .from('guests')
+        .insert([{ name: name, phone: phone }]);
+
+      if (error) {
+        showMessage('Gagal menyimpan: ' + error.message, 'red');
+        return;
+      }
+
+      showMessage('Tamu berhasil ditambahkan!', 'green');
+      this.reset();
+      loadGuests();
+    });
+
+    async function loadGuests() {
+      const list = document.getElementById('guestList');
+      list.textContent = 'Memuat daftar tamu...';
+
+      const { data, error } = await client
+        .from('guests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        list.textContent = 'Gagal memuat tamu: ' + error.message;
+        return;
+      }
+
+      list.replaceChildren();
+
+      if (!data.length) {
+        list.textContent = 'Belum ada tamu yang ditambahkan.';
+        return;
+      }
+
+      data.forEach(guest => {
+        const item = document.createElement('div');
+        item.className = 'guest';
+
+        const name = document.createElement('strong');
+        name.textContent = guest.name;
+
+        const phone = document.createElement('div');
+        phone.textContent = 'WhatsApp: ' + (guest.phone || '-');
+
+        const status = document.createElement('div');
+        status.textContent = 'Status: ' + guest.attendance;
+
+        const inviteURL = new URL(
+          'https://ikhpinannadhiroh-art.github.io/fina-huda/'
+        );
+        inviteURL.searchParams.set('to', guest.name);
+
+        const text = 'Assalamu’alaikum, ' + guest.name +
+          '. Kami mengundang Anda untuk hadir di pernikahan Fina & Huda. ' +
+          'Silakan buka undangan melalui tautan berikut: ' + inviteURL.href;
+
+        const wa = document.createElement('a');
+        wa.className = 'wa';
+        wa.textContent = 'Kirim Undangan via WhatsApp';
+        wa.href = 'https://wa.me/' + guest.phone +
+          '?text=' + encodeURIComponent(text);
+        wa.target = '_blank';
+        wa.rel = 'noopener';
+
+        item.append(name, phone, status, wa);
+        list.appendChild(item);
+      });
+    }
+
+    checkLogin();
+  </script>
+</body>
+</html>
